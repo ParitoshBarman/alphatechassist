@@ -14,10 +14,16 @@ app.use(express.static(staticPath));
 app.use(express.json());  // For parsing application/json
 app.use(express.urlencoded({ extended: true }));  // For parsing application/x-www-form-urlencoded
 
+app.use(express.json());
 
 
 app.get("/", (req, res)=>{
     res.render("index")
+})
+
+app.get("/contact", (req, res)=>{
+    console.log(req.headers)
+    res.json({"message":"Hi this is test message!", "error":false})
 })
 
 
