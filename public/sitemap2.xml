@@ -49,5 +49,11 @@
         <changefreq>yearly</changefreq>
         <priority>0.5</priority>
     </url>
+    <url>
+        <loc>https://alphatechassist.com/hire</loc>
+        <lastmod>2024-10-14</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.5</priority>
+    </url>
 
 </urlset>
