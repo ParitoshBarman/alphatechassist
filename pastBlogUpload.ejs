@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Form</title>
+</head>
+<body>
+    <h1>Submit a Blog</h1>
+    <form action="http://localhost:8080/blog" method="post" enctype="multipart/form-data">
+        <label for="title">Title:</label>
+        <input type="text" id="title" name="title" required><br><br>
+
+        <label for="image">Image:</label>
+        <input type="file" id="image" name="image" required><br><br>
+
+        <label for="mainDescription">Main Description:</label>
+        <textarea id="mainDescription" name="mainDescription" required></textarea><br><br>
+
+        <label for="subTitle">Sub Title:</label>
+        <input type="text" id="subTitle" name="subTitle"><br><br>
+
+        <label for="subDescription">Sub Description:</label>
+        <textarea id="subDescription" name="subDescription"></textarea><br><br>
+
+        <label for="quotes">Quotes:</label>
+        <input type="text" id="quotes" name="quotes"><br><br>
+
+        <label for="quotesAuthor">Quotes Author:</label>
+        <input type="text" id="quotesAuthor" name="quotesAuthor"><br><br>
+
+        <label for="videoThumbnail">Video Thumbnail:</label>
+        <input type="url" id="videoThumbnail" name="videoThumbnail"><br><br>
+
+        <label for="videoTitle">Video Title:</label>
+        <input type="text" id="videoTitle" name="videoTitle"><br><br>
+
+        <label for="videoDescription">Video Description:</label>
+        <textarea id="videoDescription" name="videoDescription"></textarea><br><br>
+
+        <label for="videoHighlightPoints">Video Highlight Points:</label>
+        <input type="text" id="videoHighlightPoints" name="videoHighlightPoints"><br><br>
+
+        <label for="videoYouTubeLink">Video YouTube Link:</label>
+        <input type="url" id="videoYouTubeLink" name="videoYouTubeLink"><br><br>
+
+        <label for="quotationParagraph">Quotation Paragraph:</label>
+        <textarea id="quotationParagraph" name="quotationParagraph"></textarea><br><br>
+
+        <label for="lastParagraph">Last Paragraph:</label>
+        <textarea id="lastParagraph" name="lastParagraph"></textarea><br><br>
+
+        <label for="tags">Tags (comma separated):</label>
+        <input type="text" id="tags" name="tags"><br><br>
+
+        <label for="blogAuthor">Blog Author:</label>
+        <input type="text" id="blogAuthor" name="blogAuthor" required><br><br>
+
+        <label for="category">Category:</label>
+        <input type="text" id="category" name="category"><br><br>
+
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>

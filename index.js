@@ -3,6 +3,10 @@ const express = require("express")
 const path = require("path");
 const mongoose = require("mongoose");
 const multer = require('multer');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 
 
 // Setup Multer for file uploads
@@ -22,7 +26,7 @@ const upload = multer({ storage });
 // const mongoURI = process.env.MONGO_URI;
 const mongoURI = "mongodb+srv://eloanbajajfinserv:zmo6Rq1H8Xs2R5ji@alphatechcluster.funme.mongodb.net/?retryWrites=true&w=majority&appName=alphaTechCluster";
 
-console.log(mongoURI)
+// console.log(mongoURI)
 
 mongoose.connect(mongoURI, {
     useNewUrlParser: true,
@@ -82,6 +86,15 @@ const blogSchema = new mongoose.Schema({
 });
 
 
+// Update User schema to include 'role'
+const userSchema = new mongoose.Schema({
+    username: { type: String, unique: true, required: true },
+    password: { type: String, required: true },
+    role: { type: String, default: 'normal' } // 'superuser' or 'normal'
+});
+
+
+const User = mongoose.model('User', userSchema);
 
 const Contact = mongoose.model("Contact", contactSchema);
 const Application = mongoose.model('Application', applicationSchema);
@@ -93,6 +106,24 @@ const PORT = 8080;
 const staticPath = path.join(__dirname, "public")
 
 const app = express()
+const SECRET_KEY = 'your_secret_key_here';
+
+
+// Middleware to protect routes based on role
+function authenticateRole(role) {
+    return (req, res, next) => {
+        const token = req.cookies.token;
+        if (!token) return res.redirect('/login');
+
+        jwt.verify(token, SECRET_KEY, (err, user) => {
+            if (err) return res.redirect('/login');
+            if (user.role !== role) return res.status(403).send('Access Denied');
+            req.user = user;
+            next();
+        });
+    };
+}
+
 
 app.set("view engine", "ejs");
 
@@ -100,8 +131,9 @@ app.use(express.static(staticPath));
 app.use(express.json());  // For parsing application/json
 app.use(express.urlencoded({ extended: true }));  // For parsing application/x-www-form-urlencoded
 
-app.use(express.json());
 app.use('/uploads', express.static('uploads'));
+
+app.use(cookieParser());
 
 
 app.get("/", (req, res) => {
@@ -120,7 +152,6 @@ app.post("/contact", async (req, res) => {
 
         res.json({ message: "Message stored successfully!", error: false });
     } catch (error) {
-        console.log(error);
         res.json({ message: "Error storing the message.", error: true });
     }
 });
@@ -135,7 +166,7 @@ app.get("/terms", (req, res) => {
 app.get("/hire", (req, res) => {
     res.render("hire")
 })
-app.get("/blogupload", (req, res) => {
+app.get("/blogupload", authenticateRole("superuser"), async(req, res) => {
     res.render("blogupload")
 })
 
@@ -260,7 +291,7 @@ app.post('/apply', upload.single('upload'), async (req, res) => {
 
 
 // Routes
-app.post('/blog', upload.single('image'), async (req, res) => {
+app.post('/blog', authenticateRole("superuser"), upload.single('image'), async (req, res) => {
     try {
         const blogData = req.body;
         blogData.image = req.file.path;
@@ -348,7 +379,7 @@ app.get('/blog/:slug', async (req, res) => {
         const latestBlogs = await Blog.find().sort({ createdDateTime: -1 }).limit(3);
 
         const currentBlog = await Blog.findOne({ autoSlug: slug });
-        
+
         if (!currentBlog) {
             return res.status(404).json({ message: 'Blog not found' });
         }
@@ -356,7 +387,7 @@ app.get('/blog/:slug', async (req, res) => {
             createdDateTime: { $lt: blog.createdDateTime } // Using 'createdDateTime' here
         }).sort({ createdDateTime: -1 });
         // console.log(previousBlog)
-        
+
         res.render("blog-details", { blog, latestBlogs, previousBlog })
     } catch (error) {
         res.status(500).json({ message: 'Error retrieving blog', error });
@@ -373,6 +404,88 @@ app.get('/blog/:slug', async (req, res) => {
 app.get("/ejs", (req, res) => {
     res.render("test.ejs")
 })
+
+
+
+
+// Registration Page
+app.get('/register', (req, res) => res.render('register'));
+
+// Register User
+app.post('/register', async (req, res) => {
+    const { username, password } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    try {
+        const newUser = new User({ username, password: hashedPassword });
+        await newUser.save();
+        res.redirect('/login');
+    } catch (err) {
+        res.send('Error registering user');
+    }
+});
+
+// Login Page
+app.get('/login', (req, res) => res.render('login'));
+
+
+
+// Authenticate User
+app.post('/login', async (req, res) => {
+    const { username, password } = req.body;
+
+    try {
+        const user = await User.findOne({ username });
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+
+        if (user && await bcrypt.compare(password, user.password)) {
+            const token = jwt.sign({ username: user.username, role: user.role }, SECRET_KEY, { expiresIn: '1h' });
+            res.cookie('token', token, { httpOnly: true });
+            return res.redirect('/dashboard');
+        } else {
+            return res.status(401).send('Invalid credentials');
+        }
+    } catch (error) {
+        console.error('Error during login:', error);
+        return res.status(500).send('Internal server error');
+    }
+});
+
+
+// Logout
+app.get('/logout', (req, res) => {
+    res.clearCookie('token');
+    res.redirect('/login');
+});
+
+// Register User (with role)
+app.post('/register', async (req, res) => {
+    const { username, password, role } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    try {
+        const newUser = new User({ username, password: hashedPassword, role });
+        await newUser.save();
+        res.redirect('/login');
+    } catch (err) {
+        res.send('Error registering user');
+    }
+});
+
+// Superuser-only dashboard
+app.get('/superuser-dashboard', authenticateRole('superuser'), (req, res) => {
+    res.render('superuser-dashboard', { username: req.user.username });
+});
+
+// Normal user dashboard
+app.get('/dashboard', authenticateRole('superuser'), async(req, res) => {
+    // const blog = await Blog.findOne({ autoSlug: slug });
+    // const username = "pari";
+    const user = await User.findOne({ username:req.user.username });
+    res.render('dashboard', { user: user, username: req.user.username });
+});
 
 
 app.listen(PORT, () => {

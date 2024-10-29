@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="text-center">Welcome, <%= user.username %>!</h2>
+        <p class="text-center">User Role: <%= user.role %></p>
+        <div class="card-deck mt-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Profile</h5>
+                    <p class="card-text">View and edit your profile information.</p>
+                    <a href="/profile" class="btn btn-primary">Go to Profile</a>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Manage Blogs</h5>
+                    <p class="card-text">Create, edit, or delete blog posts.</p>
+                    <a href="/blogs" class="btn btn-primary">Manage Blogs</a>
+                </div>
+            </div>
+            <% if (user.role === 'superuser') { %>
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">User Management</h5>
+                        <p class="card-text">Manage user roles and permissions.</p>
+                        <a href="/admin/users" class="btn btn-primary">User Management</a>
+                    </div>
+                </div>
+            <% } %>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Upload Section</h5>
+                    <p class="card-text">Upload files and manage your uploads.</p>
+                    <a href="/blogupload" class="btn btn-primary">Go to Uploads</a>
+                </div>
+            </div>
+        </div>
+        <a href="/logout" class="btn btn-secondary mt-4">Logout</a>
+    </div>
+</body>
+</html>
