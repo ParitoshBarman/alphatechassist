@@ -308,6 +308,7 @@ app.post('/blog', authenticateRole("superuser"), upload.single('image'), async (
 
         // Generate the base slug
         let baseSlug = blogData.title.toLowerCase().replace(/\s+/g, '-').slice(0, 100);
+        baseSlug = baseSlug.replace("/", "-");
         let uniqueSlug = baseSlug;
         let counter = 1;
 
